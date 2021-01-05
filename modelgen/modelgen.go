@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 
 	"github.com/iancoleman/strcase"
 	"github.com/ispec-inc/civgen-go/modelgen/model"
@@ -27,56 +26,50 @@ var (
 
 func main() {
 	flag.Parse()
-
-	if *createEntity {
-		err := model.GenerateModelFile(
-			model.GenerateModelFileInput{
-				Name:   *name,
-				Path:   filepath(*entityPath, *name),
-				Fields: *fields,
-				Layer:  model.LayerEntity,
-			},
-		)
-		if err != nil {
-			log.Fatalf("failed to generate entity file: %v", err)
-			return
-		}
-		log.Printf("Generate entity file successfully to '%s'", filepath(*entityPath, *name))
-	}
-
-	if *createModel {
-		err := model.GenerateModelFile(
-			model.GenerateModelFileInput{
-				Name:   *name,
-				Path:   filepath(*modelPath, *name),
-				Fields: *fields,
-				Layer:  model.LayerModel,
-			},
-		)
-		if err != nil {
-			log.Fatalf("failed to generate model file: %v", err)
-			return
-		}
-		log.Printf("Generate model file successfully to '%s'", filepath(*modelPath, *name))
-	}
-
-	if *createView {
-		err := model.GenerateModelFile(
-			model.GenerateModelFileInput{
-				Name:   *name,
-				Path:   filepath(*viewPath, *name),
-				Fields: *fields,
-				Layer:  model.LayerView,
-			},
-		)
-		if err != nil {
-			log.Fatalf("failed to generate view file: %v", err)
-			return
-		}
-		log.Printf("Generate view file successfully to '%s'", filepath(*viewPath, *name))
-	}
+	generateModelFile(model.LayerEntity)
+	generateModelFile(model.LayerModel)
+	generateModelFile(model.LayerView)
 }
 
-func filepath(path, name string) string {
-	return fmt.Sprintf("%s/%s/%s.go", *baseDir, path, strcase.ToSnake(name))
+func generateModelFile(layer model.Layer) {
+	var doCreate bool
+	switch layer {
+	case model.LayerEntity:
+		doCreate = *createEntity
+	case model.LayerModel:
+		doCreate = *createModel
+	case model.LayerView:
+		doCreate = *createView
+	}
+
+	var path string
+	switch layer {
+	case model.LayerEntity:
+		path = *entityPath
+	case model.LayerModel:
+		path = *modelPath
+	case model.LayerView:
+		path = *viewPath
+	}
+
+	filepath := fmt.Sprintf("%s/%s/%s.go", *baseDir, path, strcase.ToSnake(*name))
+
+	if !doCreate {
+		return
+	}
+
+	err := model.GenerateModelFile(
+		model.GenerateModelFileInput{
+			Name:   *name,
+			Path:   filepath,
+			Fields: *fields,
+			Layer:  layer,
+		},
+	)
+	if err != nil {
+		fmt.Printf("Failed to generate %s file: %v\n", layer.String(), err)
+		return
+	}
+
+	fmt.Printf("Generate %s file successfully to '%s'\n", layer.String(), filepath)
 }
