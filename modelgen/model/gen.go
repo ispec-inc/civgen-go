@@ -2,7 +2,6 @@ package model
 
 import (
 	"github.com/dave/jennifer/jen"
-	"github.com/iancoleman/strcase"
 )
 
 type GenerateModelFileInput struct {
@@ -13,7 +12,7 @@ type GenerateModelFileInput struct {
 }
 
 func GenerateModelFile(ipt GenerateModelFileInput) error {
-	f := jen.NewFile(strcase.ToSnake(ipt.Name))
+	f := jen.NewFile(ipt.Layer.String())
 
 	f.ImportName("time", "time")
 
