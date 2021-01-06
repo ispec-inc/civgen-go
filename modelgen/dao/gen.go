@@ -34,6 +34,8 @@ func GenerateFile(ipt GenerateFileInput) error {
 		jen.Return().Id(ipt.Name).Block(jen.Id("db").Id(",")),
 	)
 
+	f.Line()
+
 	f.Func().Params(
 		jen.Id("d").Id(ipt.Name),
 	).Id("Get").Params(
