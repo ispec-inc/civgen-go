@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/iancoleman/strcase"
+	"github.com/ispec-inc/civgen-go/modelgen/dao"
 	"github.com/ispec-inc/civgen-go/modelgen/model"
 	"github.com/ispec-inc/civgen-go/modelgen/pkg"
 	"github.com/ispec-inc/civgen-go/modelgen/repository"
@@ -23,6 +24,7 @@ var (
 	modelPath      = flag.String("model_path", "pkg/domain/model", "Relative path to the model directory from 'project_root'")
 	viewPath       = flag.String("view_path", "pkg/view", "Relative path to the view directory from 'project_root'")
 	repositoryPath = flag.String("repository_path", "pkg/domain/repository", "Relative path to the repository directory from 'project_root'")
+	daoPath        = flag.String("dao_path", "pkg/infra/dao", "Relative path to the dao directory from 'project_root'")
 	errorPath      = flag.String("error_path", "pkg/apperror", "Relative path to the error directory from 'project_root'")
 
 	createEntity     = flag.Bool("create_entity", true, "Create entity file, if true")
@@ -49,6 +51,7 @@ func main() {
 	generateModelFile(model.LayerModel)
 	generateModelFile(model.LayerView)
 	generateRepositoryFile()
+	generateDaoFile()
 }
 
 func generateModelFile(layer model.Layer) {
@@ -111,6 +114,23 @@ func generateRepositoryFile() {
 	fmt.Printf("Generate repository file successfully to '%s'\n", filepath)
 }
 
+func generateDaoFile() {
+	filepath := fmt.Sprintf("%s/%s.go", *daoPath, strcase.ToSnake(*name))
+
+	err := dao.GenerateFile(
+		dao.GenerateFileInput{
+			Name: *name,
+			Path: filepath,
+		},
+	)
+	if err != nil {
+		fmt.Printf("Failed to generate dao file: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Generate dao file successfully to '%s'\n", filepath)
+}
+
 func setPackages() error {
 	ipt := pkg.SetPkgsInput{
 		ProjectRoot:    *projectPath,
@@ -118,6 +138,7 @@ func setPackages() error {
 		ModelPath:      *modelPath,
 		ViewPath:       *viewPath,
 		RepositoryPath: *repositoryPath,
+		DaoPath:        *daoPath,
 		ErrorPath:      *errorPath,
 	}
 	return pkg.SetPkgs(ipt)
