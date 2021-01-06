@@ -7,14 +7,14 @@ import (
 	"github.com/ispec-inc/civgen-go/modelgen/pkg"
 )
 
-type GenerateModelFileInput struct {
+type GenerateFileInput struct {
 	Name   string
 	Path   string
 	Fields string
 	Layer  Layer
 }
 
-func GenerateModelFile(ipt GenerateModelFileInput) error {
+func GenerateFile(ipt GenerateFileInput) error {
 	f := jen.NewFile(ipt.Layer.String())
 
 	f.ImportName("time", "time")

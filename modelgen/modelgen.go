@@ -73,8 +73,8 @@ func generateModelFile(layer model.Layer) {
 		return
 	}
 
-	err := model.GenerateModelFile(
-		model.GenerateModelFileInput{
+	err := model.GenerateFile(
+		model.GenerateFileInput{
 			Name:   *name,
 			Path:   filepath,
 			Fields: *fields,
