@@ -18,7 +18,7 @@ type Field struct {
 	Type string
 }
 
-func (f Field) ToJenStatement(t Layer) *jen.Statement {
+func (f Field) ToStructField(t Layer) *jen.Statement {
 	s := jen.Id(f.Name)
 
 	switch f.Type {
