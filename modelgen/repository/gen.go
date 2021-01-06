@@ -13,7 +13,6 @@ type GenerateFileInput struct {
 func GenerateFile(ipt GenerateFileInput) error {
 	f := jen.NewFile(pkg.Pkgs.Repository.Name())
 
-	f.ImportName("time", "time")
 	f.ImportName(pkg.Pkgs.Model.Path(), pkg.Pkgs.Model.Name())
 	f.ImportName(pkg.Pkgs.Error.Path(), pkg.Pkgs.Error.Name())
 
