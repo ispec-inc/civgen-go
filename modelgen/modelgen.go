@@ -31,6 +31,7 @@ var (
 	createModel      = flag.Bool("create_model", true, "Create model file, if true")
 	createView       = flag.Bool("create_view", true, "Create view file, if true")
 	createRepository = flag.Bool("create_repository", true, "Create repository file, if true")
+	createDao        = flag.Bool("create_dao", true, "Create dao file, if true")
 )
 
 const usageText = `modelgen should be executed on the root directory of your go project.
@@ -98,6 +99,10 @@ func generateModelFile(layer model.Layer) {
 }
 
 func generateRepositoryFile() {
+	if !*createRepository {
+		return
+	}
+
 	filepath := fmt.Sprintf("%s/%s.go", *repositoryPath, strcase.ToSnake(*name))
 
 	err := repository.GenerateFile(
@@ -115,6 +120,10 @@ func generateRepositoryFile() {
 }
 
 func generateDaoFile() {
+	if !*createDao {
+		return
+	}
+
 	filepath := fmt.Sprintf("%s/%s.go", *daoPath, strcase.ToSnake(*name))
 
 	err := dao.GenerateFile(
