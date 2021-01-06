@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const UserModelName = "User"
+
 type User struct {
 	ID        int64     `gorm:"column:id"`
 	Name      string    `gorm:"column:name"`

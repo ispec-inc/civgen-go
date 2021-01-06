@@ -26,6 +26,10 @@ func GenerateFile(ipt GenerateFileInput) error {
 		f.ImportName(pkg.Pkgs.Model.Path(), pkg.Pkgs.Model.Name())
 	}
 
+	if ipt.Layer == LayerEntity {
+		f.Const().Id(fmt.Sprintf("%sModelName", ipt.Name)).Op("=").Lit(ipt.Name)
+	}
+
 	fs := NewFields(ipt.Fields)
 
 	var jenFields []jen.Code
