@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/iancoleman/strcase"
 	"github.com/ispec-inc/civgen-go/modelgen/model"
@@ -25,7 +27,13 @@ var (
 	createView   = flag.Bool("create_view", true, "Create view file, if true")
 )
 
+const usageText = `modelgen should be executed on the root directory of your go project.
+Example:
+	go run github.com/ispec-inc/civgen-go/modelgen --name User --fields ID:int64,Name:string,Email:string,CreatedAt:time.Time,UpdateAt:time.Time --project_path github.com/ispec-inc/civgen-go/example [other options]
+`
+
 func main() {
+	flag.Usage = usage
 	flag.Parse()
 
 	if err := setPackages(); err != nil {
@@ -89,4 +97,9 @@ func setPackages() error {
 		ViewPath:    *viewPath,
 	}
 	return pkg.SetPkgs(ipt)
+}
+
+func usage() {
+	_, _ = io.WriteString(os.Stderr, usageText)
+	flag.PrintDefaults()
 }
