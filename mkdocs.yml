@@ -1,6 +1,9 @@
-site_name: "Civgen-Go Design Doc"
+site_name: civgen-go
 
 nav:
   - Overview: index.md
   - Command:
     - Model: command/model.md
+
+plugins:
+  - techdocs-core
