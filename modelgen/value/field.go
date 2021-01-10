@@ -1,4 +1,4 @@
-package model
+package value
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ type Field struct {
 	Type string
 }
 
-func (f Field) ToStructField(t Layer) *jen.Statement {
+func (f Field) ToStructField(t Layer) jen.Code {
 	s := jen.Id(f.Name)
 
 	switch f.Type {
