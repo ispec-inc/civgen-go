@@ -20,7 +20,7 @@ func NewUser(db *gorm.DB) User {
 func (d User) Get(id int64) (model.User, apperror.Error) {
 	var e entity.User
 	if err := d.db.First(&e, id).Error; err != nil {
-		return model.User{}, apperror.NewGormFind(err, entity.UserModelName)
+		return model.User{}, newGormFind(err, entity.UserModelName)
 	}
 	return e.ToModel(), nil
 }
@@ -33,7 +33,7 @@ func (d User) List(ids []int64) (ms []model.User, aerr apperror.Error) {
 
 	var es []entity.User
 	if err := query.Find(&es).Error; err != nil {
-		return []model.User{}, apperror.NewGormFind(err, entity.UserModelName)
+		return []model.User{}, newGormFind(err, entity.UserModelName)
 	}
 
 	for _, e := range es {
