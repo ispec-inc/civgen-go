@@ -48,69 +48,54 @@ func main() {
 
 	gen := generator.NewGenerator(*name, *fields)
 
-	generate(gen, value.FiletypeEntity)
-	generate(gen, value.FiletypeModel)
-	generate(gen, value.FiletypeView)
-	generate(gen, value.FiletypeRepository)
-	generate(gen, value.FiletypeDao)
-	generate(gen, value.FiletypeDaoTest)
-}
-
-func generate(gen generator.Generator, ftype value.Filetype) {
-	var err error
-	var path value.Filepath
-
-	switch ftype {
-	case value.FiletypeEntity:
-		if !*createEntity {
+	if *createEntity {
+		path := value.NewFilepath(*entityPath, *name, "")
+		if err := gen.Model(path, value.LayerEntity); err != nil {
+			fmt.Printf("Failed to generate %s file: %v\n", "entity", err)
 			return
 		}
-		path = value.NewFilepath(*entityPath, *name, "")
-		err = gen.Model(path, value.LayerEntity)
-
-	case value.FiletypeModel:
-		if !*createModel {
-			return
-		}
-		path = value.NewFilepath(*modelPath, *name, "")
-		err = gen.Model(path, value.LayerModel)
-
-	case value.FiletypeView:
-		if !*createView {
-			return
-		}
-		path = value.NewFilepath(*viewPath, *name, "")
-		err = gen.Model(path, value.LayerView)
-
-	case value.FiletypeRepository:
-		if !*createRepository {
-			return
-		}
-		path = value.NewFilepath(*repositoryPath, *name, "")
-		err = gen.Repository(path)
-
-	case value.FiletypeDao:
-		if !*createDao {
-			return
-		}
-		path = value.NewFilepath(*daoPath, *name, "")
-		err = gen.Dao(path)
-
-	case value.FiletypeDaoTest:
-		if !*createDaoTest {
-			return
-		}
-		path = value.NewFilepath(*daoPath, *name, "_test")
-		err = gen.DaoTest(path)
-
+		fmt.Printf("Generate %s file successfully to '%s'\n", "entity", path.String())
 	}
-
-	if err != nil {
-		fmt.Printf("Failed to generate %s file: %v\n", ftype.String(), err)
-		return
+	if *createModel {
+		path := value.NewFilepath(*modelPath, *name, "")
+		if err := gen.Model(path, value.LayerModel); err != nil {
+			fmt.Printf("Failed to generate %s file: %v\n", "model", err)
+			return
+		}
+		fmt.Printf("Generate %s file successfully to '%s'\n", "model", path.String())
 	}
-
-	fmt.Printf("Generate %s file successfully to '%s'\n", ftype.String(), path.String())
+	if *createView {
+		path := value.NewFilepath(*viewPath, *name, "")
+		if err := gen.Model(path, value.LayerView); err != nil {
+			fmt.Printf("Failed to generate %s file: %v\n", "view", err)
+			return
+		}
+		fmt.Printf("Generate %s file successfully to '%s'\n", "view", path.String())
+	}
+	if *createRepository {
+		path := value.NewFilepath(*repositoryPath, *name, "")
+		if err := gen.Repository(path); err != nil {
+			fmt.Printf("Failed to generate %s file: %v\n", "repository", err)
+			return
+		}
+		fmt.Printf("Generate %s file successfully to '%s'\n", "repository", path.String())
+	}
+	if *createDao {
+		path := value.NewFilepath(*daoPath, *name, "")
+		if err := gen.Dao(path); err != nil {
+			fmt.Printf("Failed to generate %s file: %v\n", "dao", err)
+			return
+		}
+		fmt.Printf("Generate %s file successfully to '%s'\n", "dao", path.String())
+	}
+	if *createDaoTest {
+		path := value.NewFilepath(*daoPath, *name, "_test")
+		if err := gen.DaoTest(path); err != nil {
+			fmt.Printf("Failed to generate %s file: %v\n", "dao_test", err)
+			return
+		}
+		fmt.Printf("Generate %s file successfully to '%s'\n", "dao_test", path.String())
+	}
 }
 
 func validateFlag() {
