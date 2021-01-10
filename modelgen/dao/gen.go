@@ -8,10 +8,17 @@ import (
 )
 
 const (
-	gormPkg = "gorm.io/gorm"
+	gormPkg    = "gorm.io/gorm"
+	assertPkg  = "github.com/stretchr/testify/assert"
+	testingPkg = "testing"
 )
 
 type GenerateFileInput struct {
+	Name string
+	Path string
+}
+
+type GenerateTestFileInput struct {
 	Name string
 	Path string
 }
@@ -97,3 +104,123 @@ func GenerateFile(ipt GenerateFileInput) error {
 
 	return f.Save(ipt.Path)
 }
+
+func GenerateTestFile(ipt GenerateTestFileInput) error {
+	f := jen.NewFile(pkg.Pkgs.Dao.Name())
+
+	f.ImportName(testingPkg, "testing")
+	// Import assert by Id() method since the test code is written by plain text
+	f.Id(fmt.Sprintf("import \"%s\"", assertPkg))
+
+	f.Func().Id(fmt.Sprintf("Test%sDao_Get", ipt.Name)).Params(
+		jen.Id("t").Op("*").Qual(testingPkg, "T"),
+	).Block(
+		jen.Id("t.Helper()"),
+		jen.Id(fmt.Sprintf("d := New%s(db)", ipt.Name)),
+		jen.Id(getTableTest(ipt.Name)),
+	)
+
+	f.Line()
+
+	f.Func().Id(fmt.Sprintf("Test%sDao_List", ipt.Name)).Params(
+		jen.Id("t").Op("*").Qual(testingPkg, "T"),
+	).Block(
+		jen.Id("t.Helper()"),
+		jen.Id(fmt.Sprintf("d := New%s(db)", ipt.Name)),
+		jen.Id(listTableTest(ipt.Name)),
+	)
+
+	return f.Save(ipt.Path)
+}
+
+func getTableTest(name string) string {
+	return fmt.Sprintf(getTableTestCode, name)
+}
+
+func listTableTest(name string) string {
+	return fmt.Sprintf(listTableTestCode, name)
+}
+
+const getTableTestCode = `
+	cases := []struct {
+		name string
+		id   int64
+		want int64
+		err  bool
+	}{
+		{
+			name: "Found",
+			id:   int64(1),
+			want: int64(1),
+			err:  false,
+		},
+		{
+			name: "NotFound",
+			id:   int64(2),
+			want: int64(0),
+			err:  true,
+		},
+	}
+	for i := range cases {
+		tc := cases[i]
+		t.Run(tc.name, func(t *testing.T) {
+			if err := prepareTestData("./testdata/%s/get.sql"); err != nil {
+				t.Error(err)
+			}
+
+			opt, aerr := d.Get(tc.id)
+
+			assert.Exactly(t, tc.want, opt.ID)
+			if tc.err {
+				assert.Error(t, aerr)
+			} else {
+				assert.NoError(t, aerr)
+			}
+		})
+	}
+`
+
+const listTableTestCode = `
+	cases := []struct {
+		name string
+		ids  []int64
+		want int
+		err  bool
+	}{
+		{
+			name: "ByIDs",
+			ids:  []int64{1},
+			want: 1,
+			err:  false,
+		},
+		{
+			name: "All",
+			ids:  nil,
+			want: 1,
+			err:  false,
+		},
+		{
+			name: "NotFound",
+			ids:  []int64{2},
+			want: 0,
+			err:  false,
+		},
+	}
+	for i := range cases {
+		tc := cases[i]
+		t.Run(tc.name, func(t *testing.T) {
+			if err := prepareTestData("./testdata/%s/list.sql"); err != nil {
+				t.Error(err)
+			}
+
+			opt, aerr := d.List(tc.ids)
+
+			assert.Exactly(t, tc.want, len(opt))
+			if tc.err {
+				assert.Error(t, aerr)
+			} else {
+				assert.NoError(t, aerr)
+			}
+		})
+	}
+`

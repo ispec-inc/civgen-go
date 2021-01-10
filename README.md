@@ -23,6 +23,7 @@ go run github.com/ispec-inc/civgen-go/modelgen \
 	--create_view {Create view file, if true} (default: true)
 	--create_repository {Create repository file, if true} (default: true)
 	--create_dao {Create dao file, if true} (default: true)
+	--create_dao_test {Create dao test file, if true} (default: true)
 ```
 
 ### Example
