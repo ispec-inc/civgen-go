@@ -8,8 +8,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/ispec-inc/civgen-go/modelgen/generator"
-	"github.com/ispec-inc/civgen-go/modelgen/value"
+	"github.com/ispec-inc/civgen-go/model/generator"
+	"github.com/ispec-inc/civgen-go/model/value"
 )
 
 var (
@@ -115,7 +115,7 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-const usageText = `modelgen should be executed on the root directory of your go project.
+const usageText = `model should be executed on the root directory of your go project.
 Example:
-	go run github.com/ispec-inc/civgen-go/modelgen --name User --fields ID:int64,Name:string,Email:string,CreatedAt:time.Time,UpdateAt:time.Time --project_path github.com/ispec-inc/civgen-go/example [other options]
+	go run github.com/ispec-inc/civgen-go/model --name User --fields ID:int64,Name:string,Email:string,CreatedAt:time.Time,UpdateAt:time.Time --project_path github.com/ispec-inc/civgen-go/example [other options]
 `

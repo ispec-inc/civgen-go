@@ -1,12 +1,12 @@
 # civgen-go
 
-## modelgen
+## model
 
 ### Usage
 
 Generate model files
 ```
-go run github.com/ispec-inc/civgen-go/modelgen \
+go run github.com/ispec-inc/civgen-go/model \
   --name {model name} \
   --fields {fields of model} \
   --project_path {your project path}
@@ -29,7 +29,7 @@ go run github.com/ispec-inc/civgen-go/modelgen \
 ### Example
 Command to generate example/
 ```
-go run github.com/ispec-inc/civgen-go/modelgen \
+go run github.com/ispec-inc/civgen-go/model \
   --name User \
   --fields ID:int64,Name:string,Email:string,CreatedAt:time.Time,UpdateAt:time.Time \
   --project_path github.com/ispec-inc/civgen-go/example

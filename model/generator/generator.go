@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"github.com/ispec-inc/civgen-go/modelgen/value"
+	"github.com/ispec-inc/civgen-go/model/value"
 )
 
 type Generator interface {

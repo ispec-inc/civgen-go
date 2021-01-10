@@ -2,7 +2,7 @@ package generator
 
 import (
 	"github.com/dave/jennifer/jen"
-	"github.com/ispec-inc/civgen-go/modelgen/value"
+	"github.com/ispec-inc/civgen-go/model/value"
 )
 
 func (g generator) Repository(path value.Filepath) error {
