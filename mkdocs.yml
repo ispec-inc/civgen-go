@@ -1,0 +1,6 @@
+site_name: "Civgen-Go Design Doc"
+
+nav:
+  - Overview: index.md
+  - Command:
+    - Model: command/model.md
