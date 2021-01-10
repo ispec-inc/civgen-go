@@ -1,0 +1,16 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: civgen-go
+  title: golang code generation command
+  annotations:
+    github.com/project-slug: ispec-inc/civgen-go
+    backstage.io/techdocs-ref: dir:./
+  description: |
+  tags:
+    - golang
+    - civilization
+spec:
+  type: library
+  owner: tanimutomo
+  lifecycle: experimental
