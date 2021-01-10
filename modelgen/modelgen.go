@@ -1,16 +1,15 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
-	"github.com/iancoleman/strcase"
-	"github.com/ispec-inc/civgen-go/modelgen/dao"
-	"github.com/ispec-inc/civgen-go/modelgen/model"
-	"github.com/ispec-inc/civgen-go/modelgen/pkg"
-	"github.com/ispec-inc/civgen-go/modelgen/repository"
+	"github.com/ispec-inc/civgen-go/modelgen/generator"
+	"github.com/ispec-inc/civgen-go/modelgen/value"
 )
 
 var (
@@ -35,148 +34,103 @@ var (
 	createDaoTest    = flag.Bool("create_dao_test", true, "Create dao test file, if true")
 )
 
-const usageText = `modelgen should be executed on the root directory of your go project.
-Example:
-	go run github.com/ispec-inc/civgen-go/modelgen --name User --fields ID:int64,Name:string,Email:string,CreatedAt:time.Time,UpdateAt:time.Time --project_path github.com/ispec-inc/civgen-go/example [other options]
-`
-
 func main() {
 	flag.Usage = usage
 	flag.Parse()
+	validateFlag()
 
-	if err := setPackages(); err != nil {
-		fmt.Println(err.Error())
-		return
-	}
+	value.PackageEntity = value.NewLocalPackage(*projectPath, *entityPath)
+	value.PackageModel = value.NewLocalPackage(*projectPath, *modelPath)
+	value.PackageView = value.NewLocalPackage(*projectPath, *viewPath)
+	value.PackageRepository = value.NewLocalPackage(*projectPath, *repositoryPath)
+	value.PackageDao = value.NewLocalPackage(*projectPath, *daoPath)
+	value.PackageError = value.NewLocalPackage(*projectPath, *errorPath)
 
-	generateModelFile(model.LayerEntity)
-	generateModelFile(model.LayerModel)
-	generateModelFile(model.LayerView)
-	generateRepositoryFile()
-	generateDaoFile()
-	generateDaoTestFile()
+	gen := generator.NewGenerator(*name, *fields)
+
+	generate(gen, value.FiletypeEntity)
+	generate(gen, value.FiletypeModel)
+	generate(gen, value.FiletypeView)
+	generate(gen, value.FiletypeRepository)
+	generate(gen, value.FiletypeDao)
+	generate(gen, value.FiletypeDaoTest)
 }
 
-func generateModelFile(layer model.Layer) {
-	var doCreate bool
-	switch layer {
-	case model.LayerEntity:
-		doCreate = *createEntity
-	case model.LayerModel:
-		doCreate = *createModel
-	case model.LayerView:
-		doCreate = *createView
+func generate(gen generator.Generator, ftype value.Filetype) {
+	var err error
+	var path value.Filepath
+
+	switch ftype {
+	case value.FiletypeEntity:
+		if !*createEntity {
+			return
+		}
+		path = value.NewFilepath(*entityPath, *name, "")
+		err = gen.Model(path, value.LayerEntity)
+
+	case value.FiletypeModel:
+		if !*createModel {
+			return
+		}
+		path = value.NewFilepath(*modelPath, *name, "")
+		err = gen.Model(path, value.LayerModel)
+
+	case value.FiletypeView:
+		if !*createView {
+			return
+		}
+		path = value.NewFilepath(*viewPath, *name, "")
+		err = gen.Model(path, value.LayerView)
+
+	case value.FiletypeRepository:
+		if !*createRepository {
+			return
+		}
+		path = value.NewFilepath(*repositoryPath, *name, "")
+		err = gen.Repository(path)
+
+	case value.FiletypeDao:
+		if !*createDao {
+			return
+		}
+		path = value.NewFilepath(*daoPath, *name, "")
+		err = gen.Dao(path)
+
+	case value.FiletypeDaoTest:
+		if !*createDaoTest {
+			return
+		}
+		path = value.NewFilepath(*daoPath, *name, "_test")
+		err = gen.DaoTest(path)
+
 	}
 
-	var path string
-	switch layer {
-	case model.LayerEntity:
-		path = *entityPath
-	case model.LayerModel:
-		path = *modelPath
-	case model.LayerView:
-		path = *viewPath
-	}
-
-	filepath := fmt.Sprintf("%s/%s.go", path, strcase.ToSnake(*name))
-
-	if !doCreate {
-		return
-	}
-
-	err := model.GenerateFile(
-		model.GenerateFileInput{
-			Name:   *name,
-			Path:   filepath,
-			Fields: *fields,
-			Layer:  layer,
-		},
-	)
 	if err != nil {
-		fmt.Printf("Failed to generate %s file: %v\n", layer.String(), err)
+		fmt.Printf("Failed to generate %s file: %v\n", ftype.String(), err)
 		return
 	}
 
-	fmt.Printf("Generate %s file successfully to '%s'\n", layer.String(), filepath)
+	fmt.Printf("Generate %s file successfully to '%s'\n", ftype.String(), path.String())
 }
 
-func generateRepositoryFile() {
-	if !*createRepository {
-		return
+func validateFlag() {
+	if *name == "" {
+		log.Fatal(errors.New("'name' cannot be empty."))
 	}
-
-	filepath := fmt.Sprintf("%s/%s.go", *repositoryPath, strcase.ToSnake(*name))
-
-	err := repository.GenerateFile(
-		repository.GenerateFileInput{
-			Name: *name,
-			Path: filepath,
-		},
-	)
-	if err != nil {
-		fmt.Printf("Failed to generate repository file: %v\n", err)
-		return
+	if *fields == "" {
+		log.Fatal(errors.New("'fields' cannot be empty."))
 	}
-
-	fmt.Printf("Generate repository file successfully to '%s'\n", filepath)
-}
-
-func generateDaoFile() {
-	if !*createDao {
-		return
+	if *projectPath == "" {
+		log.Fatal(errors.New("'project_path' cannot be empty."))
 	}
-
-	filepath := fmt.Sprintf("%s/%s.go", *daoPath, strcase.ToSnake(*name))
-
-	err := dao.GenerateFile(
-		dao.GenerateFileInput{
-			Name: *name,
-			Path: filepath,
-		},
-	)
-	if err != nil {
-		fmt.Printf("Failed to generate dao file: %v\n", err)
-		return
-	}
-
-	fmt.Printf("Generate dao file successfully to '%s'\n", filepath)
-}
-
-func generateDaoTestFile() {
-	if !*createDaoTest {
-		return
-	}
-
-	filepath := fmt.Sprintf("%s/%s_test.go", *daoPath, strcase.ToSnake(*name))
-
-	err := dao.GenerateTestFile(
-		dao.GenerateTestFileInput{
-			Name: *name,
-			Path: filepath,
-		},
-	)
-	if err != nil {
-		fmt.Printf("Failed to generate dao test file: %v\n", err)
-		return
-	}
-
-	fmt.Printf("Generate dao test file successfully to '%s'\n", filepath)
-}
-
-func setPackages() error {
-	ipt := pkg.SetPkgsInput{
-		ProjectRoot:    *projectPath,
-		EntityPath:     *entityPath,
-		ModelPath:      *modelPath,
-		ViewPath:       *viewPath,
-		RepositoryPath: *repositoryPath,
-		DaoPath:        *daoPath,
-		ErrorPath:      *errorPath,
-	}
-	return pkg.SetPkgs(ipt)
 }
 
 func usage() {
 	_, _ = io.WriteString(os.Stderr, usageText)
 	flag.PrintDefaults()
 }
+
+const usageText = `modelgen should be executed on the root directory of your go project.
+Example:
+	go run github.com/ispec-inc/civgen-go/modelgen --name User --fields ID:int64,Name:string,Email:string,CreatedAt:time.Time,UpdateAt:time.Time --project_path github.com/ispec-inc/civgen-go/example [other options]
+`
