@@ -14,18 +14,17 @@ import (
 
 var (
 	// Required
-	name        = flag.String("name", "", "Model name")
-	fields      = flag.String("fields", "", "Fields of the model (e.g. ID:string,Name:string,CreatedAt:time.Time,Update:time.Time")
-	projectPath = flag.String("project_path", "", "Go package path of this project root")
-
+	name   = flag.String("name", "", "Model name")
+	fields = flag.String("fields", "", "Fields of the model (e.g. ID:string,Name:string,CreatedAt:time.Time,Update:time.Time")
+	// Required, can be set by .civgen-model.yaml
+	projectPath    = flag.String("project_path", "", "Go package path to your project root")
+	entityPath     = flag.String("entity_path", "", "Path to the 'entity' package from 'project_path'")
+	modelPath      = flag.String("model_path", "", "Path to the 'model' package from 'project_path'")
+	viewPath       = flag.String("view_path", "", "Path to the 'view' package from 'project_path'")
+	repositoryPath = flag.String("repository_path", "", "Path to the 'repository' package from 'project_path'")
+	daoPath        = flag.String("dao_path", "", "Path to the 'dao' package from 'project_path'")
+	errorPath      = flag.String("error_path", "", "Path to the 'error' package from 'project_path'")
 	// Optional
-	entityPath     = flag.String("entity_path", "pkg/infra/entity", "Relative path to the entity directory from 'project_root'")
-	modelPath      = flag.String("model_path", "pkg/domain/model", "Relative path to the model directory from 'project_root'")
-	viewPath       = flag.String("view_path", "pkg/view", "Relative path to the view directory from 'project_root'")
-	repositoryPath = flag.String("repository_path", "pkg/domain/repository", "Relative path to the repository directory from 'project_root'")
-	daoPath        = flag.String("dao_path", "pkg/infra/dao", "Relative path to the dao directory from 'project_root'")
-	errorPath      = flag.String("error_path", "pkg/apperror", "Relative path to the error directory from 'project_root'")
-
 	createEntity     = flag.Bool("create_entity", true, "Create entity file, if true")
 	createModel      = flag.Bool("create_model", true, "Create model file, if true")
 	createView       = flag.Bool("create_view", true, "Create view file, if true")
@@ -37,6 +36,7 @@ var (
 func main() {
 	flag.Usage = usage
 	flag.Parse()
+	loadConfig()
 	validateFlag()
 
 	value.PackageEntity = value.NewLocalPackage(*projectPath, *entityPath)
