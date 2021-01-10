@@ -108,6 +108,24 @@ func validateFlag() {
 	if *projectPath == "" {
 		log.Fatal(errors.New("'project_path' cannot be empty."))
 	}
+	if *entityPath == "" {
+		log.Fatal(errors.New("'entity_path' cannot be empty."))
+	}
+	if *modelPath == "" {
+		log.Fatal(errors.New("'model_path' cannot be empty."))
+	}
+	if *viewPath == "" {
+		log.Fatal(errors.New("'view_path' cannot be empty."))
+	}
+	if *repositoryPath == "" {
+		log.Fatal(errors.New("'repository_path' cannot be empty."))
+	}
+	if *daoPath == "" {
+		log.Fatal(errors.New("'dao_path' cannot be empty."))
+	}
+	if *errorPath == "" {
+		log.Fatal(errors.New("'error_path' cannot be empty."))
+	}
 }
 
 func usage() {
