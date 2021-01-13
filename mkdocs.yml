@@ -4,6 +4,7 @@ nav:
   - Overview: index.md
   - Command:
     - Model: command/model.md
+    - MockIO: command/mockio.md
 
 plugins:
   - techdocs-core
