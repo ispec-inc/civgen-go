@@ -20,6 +20,7 @@ type config struct {
 	RepositoryPath string `yaml:"repository_path"`
 	DaoPath        string `yaml:"dao_path"`
 	ErrorPath      string `yaml:"error_path"`
+	DatabasePath   string `yaml:"database_path"`
 }
 
 func loadConfig() {
@@ -59,5 +60,8 @@ func loadConfig() {
 	}
 	if cfg.ErrorPath != "" {
 		*errorPath = cfg.ErrorPath
+	}
+	if cfg.DatabasePath != "" {
+		*databasePath = cfg.DatabasePath
 	}
 }

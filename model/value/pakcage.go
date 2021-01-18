@@ -6,9 +6,13 @@ import (
 )
 
 const (
-	PackageGorm    Package = "gorm.io/gorm"
+	PackageOS      Package = "os"
 	PackageTesting Package = "testing"
+	PackageFmt     Package = "fmt"
+
+	PackageGorm    Package = "gorm.io/gorm"
 	PackageAssert  Package = "github.com/stretchr/testify/assert"
+	PackageSqlfile Package = "github.com/tanimutomo/sqlfile"
 )
 
 var (
@@ -18,6 +22,7 @@ var (
 	PackageRepository Package = ""
 	PackageDao        Package = ""
 	PackageError      Package = ""
+	PackageDatabase   Package = ""
 )
 
 const (
