@@ -35,7 +35,7 @@ go run github.com/ispec-inc/civgen-go/model \
 ```
 
 ## Example
-Set [example/.civgen-model.yaml](example/.civgen-model.yaml).
+Set [example/.civgen-model.yaml](../example/.civgen-model.yaml).
 
 Generate `User` model.
 ```
@@ -44,4 +44,4 @@ go run github.com/ispec-inc/civgen-go/model \
   --fields ID:int64,Name:string,Email:string,CreatedAt:time.Time,UpdateAt:time.Time \
 ```
 
-See [example/](./example/) for generated files.
+See [example/](../example/) for generated files.

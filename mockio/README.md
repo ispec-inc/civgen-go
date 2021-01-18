@@ -46,4 +46,4 @@ type UserList struct {
 }
 ```
 
-See [example/pkg/domain/repository/mockio/user.go](example/pkg/domain/repository/mockio/user.go) for more details.
+See [example/pkg/domain/repository/mockio/user.go](../example/pkg/domain/repository/mockio/user.go) for more details.
