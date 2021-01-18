@@ -16,15 +16,6 @@ var (
 	// Required
 	name   = flag.String("name", "", "Model name")
 	fields = flag.String("fields", "", "Fields of the model (e.g. ID:string,Name:string,CreatedAt:time.Time,Update:time.Time")
-	// Required, can be set by .civgen-model.yaml
-	projectPath    = flag.String("project_path", "", "Go package path to your project root")
-	entityPath     = flag.String("entity_path", "", "Path to the 'entity' package from 'project_path'")
-	modelPath      = flag.String("model_path", "", "Path to the 'model' package from 'project_path'")
-	viewPath       = flag.String("view_path", "", "Path to the 'view' package from 'project_path'")
-	repositoryPath = flag.String("repository_path", "", "Path to the 'repository' package from 'project_path'")
-	daoPath        = flag.String("dao_path", "", "Path to the 'dao' package from 'project_path'")
-	errorPath      = flag.String("error_path", "", "Path to the 'error' package from 'project_path'")
-	databasePath   = flag.String("database_path", "", "Path to the 'database (e.g. mysql)' package from 'project_path'")
 	// Optional
 	createEntity     = flag.Bool("create_entity", true, "Create entity file, if true")
 	createModel      = flag.Bool("create_model", true, "Create model file, if true")
@@ -40,18 +31,10 @@ func main() {
 	loadConfig()
 	validateFlag()
 
-	value.PackageEntity = value.NewLocalPackage(*projectPath, *entityPath)
-	value.PackageModel = value.NewLocalPackage(*projectPath, *modelPath)
-	value.PackageView = value.NewLocalPackage(*projectPath, *viewPath)
-	value.PackageRepository = value.NewLocalPackage(*projectPath, *repositoryPath)
-	value.PackageDao = value.NewLocalPackage(*projectPath, *daoPath)
-	value.PackageError = value.NewLocalPackage(*projectPath, *errorPath)
-	value.PackageDatabase = value.NewLocalPackage(*projectPath, *databasePath)
-
 	gen := generator.NewGenerator(*name, *fields)
 
 	if *createEntity {
-		path := value.NewFilepath(*entityPath, *name, "")
+		path := value.NewFilepath(cfg.EntityPath, *name, "")
 		if err := gen.Model(path, value.LayerEntity); err != nil {
 			fmt.Printf("Failed to generate %s file: %v\n", "entity", err)
 			return
@@ -59,7 +42,7 @@ func main() {
 		fmt.Printf("Generate %s file successfully to '%s'\n", "entity", path.String())
 	}
 	if *createModel {
-		path := value.NewFilepath(*modelPath, *name, "")
+		path := value.NewFilepath(cfg.ModelPath, *name, "")
 		if err := gen.Model(path, value.LayerModel); err != nil {
 			fmt.Printf("Failed to generate %s file: %v\n", "model", err)
 			return
@@ -67,7 +50,7 @@ func main() {
 		fmt.Printf("Generate %s file successfully to '%s'\n", "model", path.String())
 	}
 	if *createView {
-		path := value.NewFilepath(*viewPath, *name, "")
+		path := value.NewFilepath(cfg.ViewPath, *name, "")
 		if err := gen.Model(path, value.LayerView); err != nil {
 			fmt.Printf("Failed to generate %s file: %v\n", "view", err)
 			return
@@ -75,7 +58,7 @@ func main() {
 		fmt.Printf("Generate %s file successfully to '%s'\n", "view", path.String())
 	}
 	if *createRepository {
-		path := value.NewFilepath(*repositoryPath, *name, "")
+		path := value.NewFilepath(cfg.RepositoryPath, *name, "")
 		if err := gen.Repository(path); err != nil {
 			fmt.Printf("Failed to generate %s file: %v\n", "repository", err)
 			return
@@ -83,7 +66,7 @@ func main() {
 		fmt.Printf("Generate %s file successfully to '%s'\n", "repository", path.String())
 	}
 	if *createDao {
-		path := value.NewFilepath(*daoPath, *name, "")
+		path := value.NewFilepath(cfg.DaoPath, *name, "")
 		if err := gen.Dao(path); err != nil {
 			fmt.Printf("Failed to generate %s file: %v\n", "dao", err)
 			return
@@ -91,7 +74,7 @@ func main() {
 		fmt.Printf("Generate %s file successfully to '%s'\n", "dao", path.String())
 	}
 	if *createDaoTest {
-		path := value.NewFilepath(*daoPath, *name, "_test")
+		path := value.NewFilepath(cfg.DaoPath, *name, "_test")
 		if err := gen.DaoTest(path); err != nil {
 			fmt.Printf("Failed to generate %s file: %v\n", "dao_test", err)
 			return
@@ -99,7 +82,7 @@ func main() {
 		fmt.Printf("Generate %s file successfully to '%s'\n", "dao_test", path.String())
 	}
 
-	daoTestMainPath := value.NewFilepath(*daoPath, "dao_test", "")
+	daoTestMainPath := value.NewFilepath(cfg.DaoPath, "dao_test", "")
 	if _, err := os.Stat(daoTestMainPath.String()); os.IsNotExist(err) {
 		if err := gen.DaoTestMain(daoTestMainPath); err != nil {
 			fmt.Printf("Failed to generate %s file: %v\n", "dao_test_main", err)
@@ -108,7 +91,7 @@ func main() {
 		fmt.Printf("Generate %s file successfully to '%s'\n", "dao_test_main", daoTestMainPath.String())
 	}
 
-	daoErrorPath := value.NewFilepath(*daoPath, "error", "")
+	daoErrorPath := value.NewFilepath(cfg.DaoPath, "error", "")
 	if _, err := os.Stat(daoErrorPath.String()); os.IsNotExist(err) {
 		if err := gen.DaoError(daoErrorPath); err != nil {
 			fmt.Printf("Failed to generate %s file: %v\n", "dao_error", err)
@@ -124,30 +107,6 @@ func validateFlag() {
 	}
 	if *fields == "" {
 		log.Fatal(errors.New("'fields' cannot be empty."))
-	}
-	if *projectPath == "" {
-		log.Fatal(errors.New("'project_path' cannot be empty."))
-	}
-	if *entityPath == "" {
-		log.Fatal(errors.New("'entity_path' cannot be empty."))
-	}
-	if *modelPath == "" {
-		log.Fatal(errors.New("'model_path' cannot be empty."))
-	}
-	if *viewPath == "" {
-		log.Fatal(errors.New("'view_path' cannot be empty."))
-	}
-	if *repositoryPath == "" {
-		log.Fatal(errors.New("'repository_path' cannot be empty."))
-	}
-	if *daoPath == "" {
-		log.Fatal(errors.New("'dao_path' cannot be empty."))
-	}
-	if *errorPath == "" {
-		log.Fatal(errors.New("'error_path' cannot be empty."))
-	}
-	if *databasePath == "" {
-		log.Fatal(errors.New("'database_path' cannot be empty."))
 	}
 }
 
