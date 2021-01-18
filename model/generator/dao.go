@@ -13,7 +13,7 @@ func (g generator) Dao(path value.Filepath) error {
 	f.ImportName(value.PackageEntity.Path(), value.PackageEntity.Name())
 	f.ImportName(value.PackageModel.Path(), value.PackageModel.Name())
 	f.ImportName(value.PackageError.Path(), value.PackageError.Name())
-	f.ImportName(value.PackageGorm.Path(), "gorm")
+	f.ImportName(value.PackageGorm.Path(), value.PackageGorm.Name())
 
 	f.Type().Id(g.name).Struct(
 		jen.Id("db").Add(jen.Op("*")).Qual(value.PackageGorm.Path(), "DB"),
@@ -92,7 +92,7 @@ func (g generator) Dao(path value.Filepath) error {
 func (g generator) DaoTest(path value.Filepath) error {
 	f := jen.NewFile(value.PackageDao.Name())
 
-	f.ImportName(value.PackageTesting.Path(), "testing")
+	f.ImportName(value.PackageTesting.Path(), value.PackageTesting.Name())
 	// Import assert by Id() method since the test code is written by plain text
 	f.Id(fmt.Sprintf("import \"%s\"", value.PackageAssert.Path()))
 
@@ -112,6 +112,89 @@ func (g generator) DaoTest(path value.Filepath) error {
 		jen.Id("t.Helper()"),
 		jen.Id(fmt.Sprintf("d := New%s(db)", g.name)),
 		jen.Id(g.listTableTest()),
+	)
+
+	return f.Save(path.String())
+}
+
+func (g generator) DaoTestMain(path value.Filepath) error {
+	f := jen.NewFile(value.PackageDao.Name())
+
+	f.ImportName(value.PackageOS.Path(), value.PackageOS.Name())
+	f.ImportName(value.PackageTesting.Path(), value.PackageTesting.Name())
+	f.ImportName(value.PackageSqlfile.Path(), value.PackageSqlfile.Name())
+	f.ImportName(value.PackageGorm.Path(), value.PackageGorm.Name())
+	f.ImportName(value.PackageDatabase.Path(), value.PackageDatabase.Name())
+
+	f.Var().Id("db").Op("*").Qual(value.PackageGorm.Path(), "DB")
+
+	f.Line()
+
+	f.Func().Id("TestMain").Params(
+		jen.Id("m").Op("*").Qual(value.PackageTesting.Path(), "M"),
+	).Block(
+		jen.Id("err").Op(":=").Qual(value.PackageDatabase.Path(), "Setup").Params(),
+		jen.Id("if err != nil").Block(jen.Id("panic(err)")),
+		jen.Id("db").Op("=").Qual(value.PackageDatabase.Path(), "DB"),
+		jen.Line(),
+		jen.Qual(value.PackageOS.Path(), "Exit").Params(
+			jen.Id("m.Run()"),
+		),
+	)
+
+	f.Line()
+
+	f.Func().Id("prepareTestData").Params(
+		jen.Id("filepath").String(),
+	).Id("error").Block(
+		jen.Id("s").Op(":=").Qual(value.PackageSqlfile.Path(), "New").Params(),
+		jen.Id(`if err := s.Files("./testdata/delete.sql", filepath); err != nil`).Block(
+			jen.Return(jen.Id("err")),
+		),
+		jen.Id("sqlDB, err := db.DB()"),
+		jen.Id("if err != nil").Block(
+			jen.Return(jen.Id("err")),
+		),
+		jen.Id("if _, err := s.Exec(sqlDB); err != nil").Block(
+			jen.Return(jen.Id("err")),
+		),
+		jen.Return(jen.Nil()),
+	)
+
+	return f.Save(path.String())
+}
+
+func (g generator) DaoError(path value.Filepath) error {
+	f := jen.NewFile(value.PackageDao.Name())
+
+	f.ImportName(value.PackageFmt.Path(), value.PackageFmt.Name())
+	f.ImportName(value.PackageGorm.Path(), value.PackageGorm.Name())
+	f.ImportName(value.PackageError.Path(), value.PackageError.Name())
+
+	f.Line()
+
+	f.Func().Id("newGormError").Params(
+		jen.Id("err").Id("error"),
+		jen.Id("msg").String(),
+	).Qual(value.PackageError.Path(), "Error").Block(
+		jen.Switch(jen.Id("err")).Block(
+			jen.Case(jen.Qual(value.PackageGorm.Path(), "ErrRecordNotFound")).Block(
+				jen.Return(
+					jen.Qual(value.PackageError.Path(), "New").Params(
+						jen.Qual(value.PackageError.Path(), "CodeNotFound"),
+						jen.Qual(value.PackageFmt.Path(), "Errorf").Params(jen.Id(`"%s:%s", msg, err.Error()`)),
+					),
+				),
+			),
+			jen.Default().Block(
+				jen.Return(
+					jen.Qual(value.PackageError.Path(), "New").Params(
+						jen.Qual(value.PackageError.Path(), "CodeError"),
+						jen.Qual(value.PackageFmt.Path(), "Errorf").Params(jen.Id(`"%s:%s", msg, err.Error()`)),
+					),
+				),
+			),
+		),
 	)
 
 	return f.Save(path.String())

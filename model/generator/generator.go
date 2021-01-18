@@ -9,6 +9,8 @@ type Generator interface {
 	Repository(path value.Filepath) error
 	Dao(path value.Filepath) error
 	DaoTest(path value.Filepath) error
+	DaoTestMain(path value.Filepath) error
+	DaoError(path value.Filepath) error
 }
 
 type generator struct {
