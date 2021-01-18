@@ -22,6 +22,7 @@ go run github.com/ispec-inc/civgen-go/model \
 	--repository_path {path to the 'repository' package from 'project_path'}
 	--dao_path {path to the 'dao' package from 'project_path'}
 	--error_path {path to the 'error' package from 'project_path'}
+	--database_path {path to the 'database (e.g. mysql)' package from 'project_path'}
 
 	// Optional
 	--create_entity {create entity file, if true} (default: true)
@@ -46,6 +47,7 @@ view_path:
 repository_path: 
 dao_path: 
 error_path: 
+database_path:
 ```
 
 ### Example
