@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/go-playground/validator"
+	"github.com/ispec-inc/civgen-go/model/value"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -12,15 +14,17 @@ const (
 	configPath = "./.civgen-model.yaml"
 )
 
+var cfg *config
+
 type config struct {
-	ProjectPath    string `yaml:"project_path"`
-	EntityPath     string `yaml:"entity_path"`
-	ModelPath      string `yaml:"model_path"`
-	ViewPath       string `yaml:"view_path"`
-	RepositoryPath string `yaml:"repository_path"`
-	DaoPath        string `yaml:"dao_path"`
-	ErrorPath      string `yaml:"error_path"`
-	DatabasePath   string `yaml:"database_path"`
+	ProjectPath    string `yaml:"project_path" validate:"required"`
+	EntityPath     string `yaml:"entity_path" validate:"required"`
+	ModelPath      string `yaml:"model_path" validate:"required"`
+	ViewPath       string `yaml:"view_path" validate:"required"`
+	RepositoryPath string `yaml:"repository_path" validate:"required"`
+	DaoPath        string `yaml:"dao_path" validate:"required"`
+	ErrorPath      string `yaml:"error_path" validate:"required"`
+	DatabasePath   string `yaml:"database_path" validate:"required"`
 }
 
 func loadConfig() {
@@ -34,34 +38,30 @@ func loadConfig() {
 		os.Exit(1)
 	}
 
-	var cfg config
-	if err := yaml.Unmarshal(data, &cfg); err != nil {
+	cfg = &config{}
+	if err := yaml.Unmarshal(data, cfg); err != nil {
 		fmt.Printf("cannot parse %s correctly: %v\n", configPath, err)
 		os.Exit(1)
 	}
 
-	if cfg.ProjectPath != "" {
-		*projectPath = cfg.ProjectPath
+	validateConfig()
+	setPackages()
+}
+
+func validateConfig() {
+	val := validator.New()
+	if err := val.Struct(cfg); err != nil {
+		fmt.Printf("invalid config: %v\n", err)
+		os.Exit(1)
 	}
-	if cfg.EntityPath != "" {
-		*entityPath = cfg.EntityPath
-	}
-	if cfg.ModelPath != "" {
-		*modelPath = cfg.ModelPath
-	}
-	if cfg.ViewPath != "" {
-		*viewPath = cfg.ViewPath
-	}
-	if cfg.RepositoryPath != "" {
-		*repositoryPath = cfg.RepositoryPath
-	}
-	if cfg.DaoPath != "" {
-		*daoPath = cfg.DaoPath
-	}
-	if cfg.ErrorPath != "" {
-		*errorPath = cfg.ErrorPath
-	}
-	if cfg.DatabasePath != "" {
-		*databasePath = cfg.DatabasePath
-	}
+}
+
+func setPackages() {
+	value.PackageEntity = value.NewLocalPackage(cfg.ProjectPath, cfg.EntityPath)
+	value.PackageModel = value.NewLocalPackage(cfg.ProjectPath, cfg.ModelPath)
+	value.PackageView = value.NewLocalPackage(cfg.ProjectPath, cfg.ViewPath)
+	value.PackageRepository = value.NewLocalPackage(cfg.ProjectPath, cfg.RepositoryPath)
+	value.PackageDao = value.NewLocalPackage(cfg.ProjectPath, cfg.DaoPath)
+	value.PackageError = value.NewLocalPackage(cfg.ProjectPath, cfg.ErrorPath)
+	value.PackageDatabase = value.NewLocalPackage(cfg.ProjectPath, cfg.DatabasePath)
 }
