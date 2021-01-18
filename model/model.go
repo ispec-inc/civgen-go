@@ -24,6 +24,7 @@ var (
 	repositoryPath = flag.String("repository_path", "", "Path to the 'repository' package from 'project_path'")
 	daoPath        = flag.String("dao_path", "", "Path to the 'dao' package from 'project_path'")
 	errorPath      = flag.String("error_path", "", "Path to the 'error' package from 'project_path'")
+	databasePath   = flag.String("database_path", "", "Path to the 'database (e.g. mysql)' package from 'project_path'")
 	// Optional
 	createEntity     = flag.Bool("create_entity", true, "Create entity file, if true")
 	createModel      = flag.Bool("create_model", true, "Create model file, if true")
@@ -45,6 +46,7 @@ func main() {
 	value.PackageRepository = value.NewLocalPackage(*projectPath, *repositoryPath)
 	value.PackageDao = value.NewLocalPackage(*projectPath, *daoPath)
 	value.PackageError = value.NewLocalPackage(*projectPath, *errorPath)
+	value.PackageDatabase = value.NewLocalPackage(*projectPath, *databasePath)
 
 	gen := generator.NewGenerator(*name, *fields)
 
@@ -96,6 +98,24 @@ func main() {
 		}
 		fmt.Printf("Generate %s file successfully to '%s'\n", "dao_test", path.String())
 	}
+
+	daoTestMainPath := value.NewFilepath(*daoPath, "dao_test", "")
+	if _, err := os.Stat(daoTestMainPath.String()); os.IsNotExist(err) {
+		if err := gen.DaoTestMain(daoTestMainPath); err != nil {
+			fmt.Printf("Failed to generate %s file: %v\n", "dao_test_main", err)
+			return
+		}
+		fmt.Printf("Generate %s file successfully to '%s'\n", "dao_test_main", daoTestMainPath.String())
+	}
+
+	daoErrorPath := value.NewFilepath(*daoPath, "error", "")
+	if _, err := os.Stat(daoErrorPath.String()); os.IsNotExist(err) {
+		if err := gen.DaoError(daoErrorPath); err != nil {
+			fmt.Printf("Failed to generate %s file: %v\n", "dao_error", err)
+			return
+		}
+		fmt.Printf("Generate %s file successfully to '%s'\n", "dao_error", daoErrorPath.String())
+	}
 }
 
 func validateFlag() {
@@ -125,6 +145,9 @@ func validateFlag() {
 	}
 	if *errorPath == "" {
 		log.Fatal(errors.New("'error_path' cannot be empty."))
+	}
+	if *databasePath == "" {
+		log.Fatal(errors.New("'database_path' cannot be empty."))
 	}
 }
 
