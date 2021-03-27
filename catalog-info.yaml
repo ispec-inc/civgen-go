@@ -5,7 +5,7 @@ metadata:
   title: golang code generation command
   annotations:
     github.com/project-slug: ispec-inc/civgen-go
-    backstage.io/techdocs-ref: dir:./
+    backstage.io/techdocs-ref: github:https://github.com/ispec-inc/civgen-go
   description: |
   tags:
     - golang
